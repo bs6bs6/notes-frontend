@@ -1,25 +1,74 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
+import { useNavigate } from "react-router-dom";
+import { LinkContainer } from "react-router-bootstrap";
+import { AppContext, AppContextType } from "./lib/contextLib";
+import Routes from "./Routes.tsx";
+import "./App.css";
 
 function App() {
+  const nav = useNavigate();
+
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
+  const [isAuthenticated, userHasAuthenticated] = useState(false);
+
+  useEffect(() => {
+    onLoad();
+  }, []);
+
+  async function onLoad() {
+
+      userHasAuthenticated(true);
+
+
+    setIsAuthenticating(false);
+  }
+
+  async function handleLogout() {
+
+    userHasAuthenticated(false);
+
+    nav("/login");
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    !isAuthenticating && (
+      <div className="App container py-3">
+        <Navbar collapseOnSelect bg="light" expand="md" className="mb-3 px-3">
+          <LinkContainer to="/">
+            <Navbar.Brand className="fw-bold text-muted">Scratch</Navbar.Brand>
+          </LinkContainer>
+          <Navbar.Toggle />
+          <Navbar.Collapse className="justify-content-end">
+            <Nav activeKey={window.location.pathname}>
+              {isAuthenticated ? (
+                <>
+                  <LinkContainer to="/settings">
+                    <Nav.Link>Settings</Nav.Link>
+                  </LinkContainer>
+                  <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+                </>
+              ) : (
+                <>
+                  <LinkContainer to="/signup">
+                    <Nav.Link>Signup</Nav.Link>
+                  </LinkContainer>
+                  <LinkContainer to="/login">
+                    <Nav.Link>Login</Nav.Link>
+                  </LinkContainer>
+                </>
+              )}
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
+        <AppContext.Provider
+          value={{ isAuthenticated, userHasAuthenticated } as AppContextType}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          <Routes />
+        </AppContext.Provider>
+      </div>
+    )
   );
 }
 
